@@ -1,0 +1,26 @@
+{% extends "admin/base.html" %}
+{% block title %}Users - Admin{% endblock %}
+{% block content %}
+<div class="admin-page-header">
+  <h1>Registered Users</h1>
+  <span class="count-badge">{{ users|length }} total</span>
+</div>
+<table class="admin-table">
+  <thead>
+    <tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Bookings</th><th>Joined</th></tr>
+  </thead>
+  <tbody>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.id }}</td>
+      <td>{{ u.name }}</td>
+      <td>{{ u.email }}</td>
+      <td>{{ u.phone or '—' }}</td>
+      <td><span class="role-badge role-{{ u.role }}">{{ u.role | upper }}</span></td>
+      <td>{{ u.booking_count }}</td>
+      <td>{{ u.created_at[:10] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

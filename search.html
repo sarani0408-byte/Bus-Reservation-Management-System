@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Search Buses - BusBook TN{% endblock %}
+{% block content %}
+<section class="search-top">
+  <h2>Search Buses</h2>
+  <form action="{{ url_for('search') }}" method="GET" class="search-form inline-search">
+    <div class="form-row">
+      <div class="form-group">
+        <label>From</label>
+        <select name="source" required>
+          <option value="">Source</option>
+          {% for d in districts %}
+            <option value="{{ d }}" {% if d==source %}selected{% endif %}>{{ d }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>To</label>
+        <select name="destination" required>
+          <option value="">Destination</option>
+          {% for d in districts %}
+            <option value="{{ d }}" {% if d==destination %}selected{% endif %}>{{ d }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" name="travel_date" value="{{ travel_date }}"
+               min="{{ today }}" max="{{ max_date }}" required>
+      </div>
+      <button type="submit" class="btn-search">Search 🔍</button>
+    </div>
+  </form>
+</section>
+
+{% if source and destination and travel_date %}
+  <div class="results-header">
+    <h3>{{ source }} → {{ destination }} &nbsp;|&nbsp; {{ travel_date }}
+      <span class="badge-count">{{ buses|length }} bus(es) found</span>
+    </h3>
+  </div>
+
+  {% if buses %}
+    {% for b in buses %}
+    <div class="bus-card">
+      <div class="bus-header">
+        <div class="bus-name-type">
+          <h3>{{ b.bus_name }}</h3>
+          <span class="badge {% if 'AC' in b.bus_type %}badge-ac{% else %}badge-nonac{% endif %}">
+            {{ b.bus_type }}
+          </span>
+        </div>
+        <div class="bus-number">{{ b.bus_number }}</div>
+      </div>
+      <div class="bus-details">
+        <div class="time-block">
+          <div class="time">{{ b.departure_time }}</div>
+          <div class="city">{{ b.source }}</div>
+        </div>
+        <div class="duration-block">
+          <div class="duration-line"></div>
+          <div class="duration-text">{{ b.duration }}</div>
+          <div class="duration-line"></div>
+        </div>
+        <div class="time-block">
+          <div class="time">{{ b.arrival_time }}</div>
+          <div class="city">{{ b.destination }}</div>
+        </div>
+        <div class="seats-block">
+          <div class="seats-count {% if b.available_seats < 5 %}low-seats{% endif %}">
+            {{ b.available_seats }} seats left
+          </div>
+        </div>
+        <div class="price-block">
+          <div class="price">₹{{ b.price | int }}</div>
+          <div class="per-seat">per seat</div>
+        </div>
+        <div class="action-block">
+          {% if b.available_seats > 0 %}
+            <a href="{{ url_for('seat_selection', bus_id=b.id, travel_date=travel_date) }}"
+               class="btn-book">Select Seats</a>
+          {% else %}
+            <button class="btn-sold" disabled>Sold Out</button>
+          {% endif %}
+        </div>
+      </div>
+      {% if b.amenities %}
+      <div class="amenities">
+        {% for a in b.amenities.split(',') %}
+          <span class="amenity-tag">✓ {{ a.strip() }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="no-results">
+      <p>😞 No buses found for this route on {{ travel_date }}.</p>
+      <a href="{{ url_for('index') }}" class="btn-primary">Try Another Route</a>
+    </div>
+  {% endif %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Profile - BusBook TN{% endblock %}
+{% block content %}
+<div class="auth-container">
+  <div class="auth-box profile-box">
+    <div class="auth-header">
+      <span class="auth-icon">👤</span>
+      <h2>My Profile</h2>
+    </div>
+    <form method="POST" class="auth-form">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" name="name" value="{{ user.name }}" required>
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" value="{{ user.email }}" disabled>
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" name="phone" value="{{ user.phone or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Member Since</label>
+        <input type="text" value="{{ user.created_at[:10] }}" disabled>
+      </div>
+      <button type="submit" class="btn-primary full-width">Update Profile →</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "admin/base.html" %}
+{% block title %}Admin Dashboard - BusBook TN{% endblock %}
+{% block content %}
+<div class="admin-page-header">
+  <h1>Dashboard</h1>
+  <p>Welcome, {{ session.user_name }}! Here's your system overview.</p>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card stat-users">
+    <div class="stat-icon">👥</div>
+    <div class="stat-num">{{ stats.users }}</div>
+    <div class="stat-label">Registered Users</div>
+  </div>
+  <div class="stat-card stat-buses">
+    <div class="stat-icon">🚌</div>
+    <div class="stat-num">{{ stats.buses }}</div>
+    <div class="stat-label">Active Buses</div>
+  </div>
+  <div class="stat-card stat-bookings">
+    <div class="stat-icon">🎟</div>
+    <div class="stat-num">{{ stats.bookings }}</div>
+    <div class="stat-label">Total Bookings</div>
+  </div>
+  <div class="stat-card stat-revenue">
+    <div class="stat-icon">💰</div>
+    <div class="stat-num">₹{{ stats.revenue | int }}</div>
+    <div class="stat-label">Total Revenue</div>
+  </div>
+</div>
+
+<div class="admin-section">
+  <h2>Recent Bookings</h2>
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Ref</th><th>Passenger</th><th>Route</th>
+        <th>Bus</th><th>Date</th><th>Amount</th><th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for bk in recent %}
+      <tr>
+        <td><strong>{{ bk.booking_ref }}</strong></td>
+        <td>{{ bk.uname }}</td>
+        <td>{{ bk.source }} → {{ bk.destination }}</td>
+        <td>{{ bk.bus_name }}</td>
+        <td>{{ bk.travel_date }}</td>
+        <td>₹{{ bk.total_price | int }}</td>
+        <td>
+          <span class="status-badge status-{{ bk.booking_status }}">
+            {{ bk.booking_status | upper }}
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

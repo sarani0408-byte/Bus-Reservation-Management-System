@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}BusBook TN - Book Tamil Nadu Buses{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <div class="hero-content">
+    <h1>Travel Across Tamil Nadu</h1>
+    <p>Book bus tickets to 30+ destinations instantly</p>
+  </div>
+  <div class="search-box">
+    <h2>Find Your Bus</h2>
+    <form action="{{ url_for('search') }}" method="GET" class="search-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>From</label>
+          <select name="source" required>
+            <option value="">Select Source</option>
+            {% for d in districts %}
+              <option value="{{ d }}">{{ d }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="swap-icon">⇄</div>
+        <div class="form-group">
+          <label>To</label>
+          <select name="destination" required>
+            <option value="">Select Destination</option>
+            {% for d in districts %}
+              <option value="{{ d }}">{{ d }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Travel Date</label>
+          <input type="date" name="travel_date" required
+                 min="{{ today }}" max="{{ max_date }}" value="{{ today }}">
+        </div>
+        <button type="submit" class="btn-search">Search Buses 🔍</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="features">
+  <div class="feature-card">
+    <div class="feat-icon">🎟</div>
+    <h3>Easy Booking</h3>
+    <p>Select your seat, pay securely, get instant ticket</p>
+  </div>
+  <div class="feature-card">
+    <div class="feat-icon">💺</div>
+    <h3>Seat Selection</h3>
+    <p>Visual seat map — choose your preferred seat</p>
+  </div>
+  <div class="feature-card">
+    <div class="feat-icon">❌</div>
+    <h3>Easy Cancellation</h3>
+    <p>Cancel anytime before travel date</p>
+  </div>
+  <div class="feature-card">
+    <div class="feat-icon">📱</div>
+    <h3>Mobile Friendly</h3>
+    <p>Book on any device, anywhere</p>
+  </div>
+</section>
+
+<section class="routes-section">
+  <h2>Popular Routes</h2>
+  <div class="routes-grid">
+    <div class="route-card"><span>Chennai</span><span class="arrow">→</span><span>Coimbatore</span></div>
+    <div class="route-card"><span>Chennai</span><span class="arrow">→</span><span>Madurai</span></div>
+    <div class="route-card"><span>Chennai</span><span class="arrow">→</span><span>Salem</span></div>
+    <div class="route-card"><span>Coimbatore</span><span class="arrow">→</span><span>Madurai</span></div>
+    <div class="route-card"><span>Chennai</span><span class="arrow">→</span><span>Trichy</span></div>
+    <div class="route-card"><span>Madurai</span><span class="arrow">→</span><span>Coimbatore</span></div>
+  </div>
+</section>
+{% endblock %}

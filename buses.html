@@ -1,0 +1,154 @@
+{% extends "admin/base.html" %}
+{% block title %}Manage Buses - Admin{% endblock %}
+{% block content %}
+<div class="admin-page-header">
+  <h1>Manage Buses</h1>
+  <button onclick="document.getElementById('add-bus-modal').style.display='flex'" class="btn-primary">
+    + Add New Bus
+  </button>
+</div>
+
+<table class="admin-table">
+  <thead>
+    <tr>
+      <th>No.</th><th>Name</th><th>Type</th><th>Route</th>
+      <th>Timings</th><th>Price</th><th>Seats</th><th>Status</th><th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for b in buses %}
+    <tr class="{% if not b.is_active %}row-inactive{% endif %}">
+      <td>{{ b.bus_number }}</td>
+      <td>{{ b.bus_name }}</td>
+      <td><span class="badge-sm">{{ b.bus_type }}</span></td>
+      <td>{{ b.source }} → {{ b.destination }}</td>
+      <td>{{ b.departure_time }} – {{ b.arrival_time }}</td>
+      <td>₹{{ b.price | int }}</td>
+      <td>{{ b.total_seats }}</td>
+      <td>
+        <span class="status-badge {% if b.is_active %}status-booked{% else %}status-cancelled{% endif %}">
+          {{ 'Active' if b.is_active else 'Inactive' }}
+        </span>
+      </td>
+      <td>
+        <button onclick="openEdit({{ b.id }},'{{ b.bus_name }}','{{ b.bus_type }}',
+          '{{ b.source }}','{{ b.destination }}','{{ b.departure_time }}',
+          '{{ b.arrival_time }}','{{ b.duration }}',{{ b.price }},
+          {{ b.total_seats }},'{{ b.amenities or '' }}',{{ b.is_active }})"
+          class="btn-sm btn-view">Edit</button>
+        <form method="POST" action="{{ url_for('admin_delete_bus', bid=b.id) }}"
+              style="display:inline" onsubmit="return confirm('Deactivate this bus?')">
+          <button type="submit" class="btn-sm btn-cancel">Deactivate</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- ADD BUS MODAL -->
+<div id="add-bus-modal" class="modal" style="display:none">
+  <div class="modal-box">
+    <h3>Add New Bus</h3>
+    <form method="POST" action="{{ url_for('admin_add_bus') }}" class="admin-form">
+      <div class="form-row">
+        <div class="form-group"><label>Bus Number</label><input type="text" name="bus_number" required placeholder="TN-XX"></div>
+        <div class="form-group"><label>Bus Name</label><input type="text" name="bus_name" required placeholder="KPN Travels"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Bus Type</label>
+          <select name="bus_type" required>
+            <option>AC Sleeper</option><option>Non-AC Sleeper</option>
+            <option>AC Seater</option><option>Non-AC Seater</option><option>Sleeper</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Price (₹)</label><input type="number" name="price" required placeholder="450"></div>
+        <div class="form-group"><label>Total Seats</label><input type="number" name="total_seats" required value="40"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Source</label>
+          <select name="source" required>{% for d in districts %}<option>{{d}}</option>{% endfor %}</select>
+        </div>
+        <div class="form-group">
+          <label>Destination</label>
+          <select name="destination" required>{% for d in districts %}<option>{{d}}</option>{% endfor %}</select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Departure Time</label><input type="time" name="departure_time" required></div>
+        <div class="form-group"><label>Arrival Time</label><input type="time" name="arrival_time" required></div>
+        <div class="form-group"><label>Duration</label><input type="text" name="duration" placeholder="6h 30m"></div>
+      </div>
+      <div class="form-group"><label>Amenities</label><input type="text" name="amenities" placeholder="WiFi,Charging,Water"></div>
+      <div class="modal-actions">
+        <button type="submit" class="btn-primary">Add Bus</button>
+        <button type="button" onclick="document.getElementById('add-bus-modal').style.display='none'" class="btn-secondary">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- EDIT BUS MODAL -->
+<div id="edit-bus-modal" class="modal" style="display:none">
+  <div class="modal-box">
+    <h3>Edit Bus</h3>
+    <form method="POST" id="edit-form" class="admin-form">
+      <div class="form-row">
+        <div class="form-group"><label>Bus Name</label><input type="text" name="bus_name" id="e-name" required></div>
+        <div class="form-group">
+          <label>Bus Type</label>
+          <select name="bus_type" id="e-type">
+            <option>AC Sleeper</option><option>Non-AC Sleeper</option>
+            <option>AC Seater</option><option>Non-AC Seater</option><option>Sleeper</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Source</label>
+          <select name="source" id="e-src">{% for d in districts %}<option>{{d}}</option>{% endfor %}</select>
+        </div>
+        <div class="form-group"><label>Destination</label>
+          <select name="destination" id="e-dst">{% for d in districts %}<option>{{d}}</option>{% endfor %}</select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Departure</label><input type="time" name="departure_time" id="e-dep"></div>
+        <div class="form-group"><label>Arrival</label><input type="time" name="arrival_time" id="e-arr"></div>
+        <div class="form-group"><label>Duration</label><input type="text" name="duration" id="e-dur"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Price (₹)</label><input type="number" name="price" id="e-price" required></div>
+        <div class="form-group"><label>Total Seats</label><input type="number" name="total_seats" id="e-seats" required></div>
+        <div class="form-group"><label>Active</label>
+          <select name="is_active" id="e-active"><option value="1">Yes</option><option value="0">No</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label>Amenities</label><input type="text" name="amenities" id="e-amenities"></div>
+      <div class="modal-actions">
+        <button type="submit" class="btn-primary">Save Changes</button>
+        <button type="button" onclick="document.getElementById('edit-bus-modal').style.display='none'" class="btn-secondary">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEdit(id,name,type,src,dst,dep,arr,dur,price,seats,amenities,active){
+  document.getElementById('edit-form').action = '/admin/buses/edit/' + id;
+  document.getElementById('e-name').value = name;
+  document.getElementById('e-type').value = type;
+  document.getElementById('e-src').value = src;
+  document.getElementById('e-dst').value = dst;
+  document.getElementById('e-dep').value = dep;
+  document.getElementById('e-arr').value = arr;
+  document.getElementById('e-dur').value = dur;
+  document.getElementById('e-price').value = price;
+  document.getElementById('e-seats').value = seats;
+  document.getElementById('e-amenities').value = amenities;
+  document.getElementById('e-active').value = active;
+  document.getElementById('edit-bus-modal').style.display = 'flex';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}My Bookings - BusBook TN{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h2>My Bookings</h2>
+</div>
+
+{% if bookings %}
+  {% for bk in bookings %}
+  <div class="booking-card {% if bk.booking_status=='cancelled' %}cancelled-card{% endif %}">
+    <div class="bk-top">
+      <div class="bk-ref">
+        <span class="ref-label">Ref:</span> <strong>{{ bk.booking_ref }}</strong>
+      </div>
+      <span class="bk-status status-{{ bk.booking_status }}">
+        {% if bk.booking_status == 'booked' %}✅ Booked
+        {% else %}❌ Cancelled{% endif %}
+      </span>
+    </div>
+    <div class="bk-details">
+      <div class="bk-route">
+        <strong>{{ bk.source }}</strong> → <strong>{{ bk.destination }}</strong>
+      </div>
+      <div class="bk-info">
+        <span>🚌 {{ bk.bus_name }} ({{ bk.bus_number }})</span>
+        <span>📅 {{ bk.travel_date }}</span>
+        <span>🕐 {{ bk.departure_time }}</span>
+        <span>💺 Seats: {{ bk.seats }}</span>
+        <span>💰 ₹{{ bk.total_price | int }}</span>
+        <span class="badge-type">{{ bk.bus_type }}</span>
+      </div>
+    </div>
+    <div class="bk-actions">
+      {% if bk.booking_status == 'booked' %}
+        <a href="{{ url_for('ticket', ref=bk.booking_ref) }}" class="btn-sm btn-view">View Ticket</a>
+        <form method="POST" action="{{ url_for('cancel', ref=bk.booking_ref) }}" style="display:inline"
+              onsubmit="return confirm('Cancel this booking?')">
+          <button type="submit" class="btn-sm btn-cancel">Cancel</button>
+        </form>
+        <div class="rating-form">
+          <form method="POST" action="{{ url_for('rate_bus', bus_id=bk.bus_id) }}">
+            <label>Rate this bus:</label>
+            <select name="rating">
+              <option value="5">⭐⭐⭐⭐⭐</option>
+              <option value="4">⭐⭐⭐⭐</option>
+              <option value="3">⭐⭐⭐</option>
+              <option value="2">⭐⭐</option>
+              <option value="1">⭐</option>
+            </select>
+            <input type="text" name="comment" placeholder="Comment (optional)">
+            <button type="submit" class="btn-sm btn-rate">Submit</button>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="empty-state">
+    <p>📋 No bookings yet!</p>
+    <a href="{{ url_for('index') }}" class="btn-primary">Book Your First Trip</a>
+  </div>
+{% endif %}
+{% endblock %}

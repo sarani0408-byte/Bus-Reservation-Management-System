@@ -1,0 +1,36 @@
+{% extends "admin/base.html" %}
+{% block title %}All Bookings - Admin{% endblock %}
+{% block content %}
+<div class="admin-page-header">
+  <h1>All Bookings</h1>
+  <span class="count-badge">{{ bookings|length }} total</span>
+</div>
+<table class="admin-table">
+  <thead>
+    <tr>
+      <th>Ref</th><th>User</th><th>Bus</th><th>Route</th>
+      <th>Travel Date</th><th>Seats</th><th>Amount</th>
+      <th>Payment</th><th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for bk in bookings %}
+    <tr>
+      <td><strong>{{ bk.booking_ref }}</strong></td>
+      <td>{{ bk.uname }}<br><small>{{ bk.email }}</small></td>
+      <td>{{ bk.bus_name }}<br><small>{{ bk.bus_number }}</small></td>
+      <td>{{ bk.source }} → {{ bk.destination }}</td>
+      <td>{{ bk.travel_date }}</td>
+      <td>{{ bk.seats }}</td>
+      <td>₹{{ bk.total_price | int }}</td>
+      <td>{{ bk.payment_method }}</td>
+      <td>
+        <span class="status-badge status-{{ bk.booking_status }}">
+          {{ bk.booking_status | upper }}
+        </span>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

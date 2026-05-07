@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Select Seats - {{ bus.bus_name }}{% endblock %}
+{% block content %}
+<div class="seats-page">
+  <div class="bus-info-bar">
+    <h2>{{ bus.bus_name }} &nbsp; <span class="badge">{{ bus.bus_type }}</span></h2>
+    <p>{{ bus.source }} → {{ bus.destination }} &nbsp;|&nbsp;
+       Departure: <strong>{{ bus.departure_time }}</strong> &nbsp;|&nbsp;
+       Date: <strong>{{ travel_date }}</strong> &nbsp;|&nbsp;
+       Price: <strong>₹{{ bus.price | int }}/seat</strong>
+    </p>
+  </div>
+
+  <div class="seat-layout-container">
+    <div class="seat-legend">
+      <span class="legend-item"><span class="seat-demo available"></span> Available</span>
+      <span class="legend-item"><span class="seat-demo booked-demo"></span> Booked</span>
+      <span class="legend-item"><span class="seat-demo locked-demo"></span> Locked (5 min)</span>
+      <span class="legend-item"><span class="seat-demo selected-demo"></span> Selected</span>
+    </div>
+
+    <form method="GET" action="{{ url_for('book', bus_id=bus.id) }}" id="seat-form">
+      <input type="hidden" name="travel_date" value="{{ travel_date }}">
+      <input type="hidden" name="seats" id="selected-seats-input" value="">
+
+      <div class="bus-body">
+        <div class="driver-section">🚗 Driver</div>
+        <div class="seats-grid">
+          {% for i in range(1, total+1) %}
+            {% set is_booked = i in booked %}
+            {% set is_locked = i in locked and i not in my_locked %}
+            {% set is_mine = i in my_locked %}
+            <div class="seat
+              {% if is_booked %}seat-booked
+              {% elif is_locked %}seat-locked
+              {% else %}seat-available{% endif %}"
+              data-seat="{{ i }}"
+              data-bus="{{ bus.id }}"
+              data-date="{{ travel_date }}"
+              data-price="{{ bus.price }}"
+              {% if not is_booked and not is_locked %}onclick="toggleSeat(this)"{% endif %}
+              title="Seat {{ i }}{% if is_booked %} (Booked){% elif is_locked %} (Locked){% endif %}">
+              <span class="seat-num">{{ i }}</span>
+            </div>
+            {% if i % 4 == 0 %}<div class="aisle"></div>{% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="selection-summary" id="selection-summary">
+        <div class="summary-info">
+          <span>Selected: <strong id="sel-count">0</strong> seat(s)</span>
+          <span>Total: <strong id="sel-total">₹0</strong></span>
+          <span id="sel-seats-display"></span>
+        </div>
+        <button type="submit" class="btn-primary" id="proceed-btn" disabled>Proceed to Book →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+var selectedSeats = [];
+var price = {{ bus.price }};
+
+function toggleSeat(el) {
+  var seat = parseInt(el.getAttribute('data-seat'));
+  if (el.classList.contains('seat-selected')) {
+    el.classList.remove('seat-selected');
+    el.classList.add('seat-available');
+    selectedSeats = selectedSeats.filter(function(s){ return s !== seat; });
+    unlockSeat(el.getAttribute('data-bus'), seat, el.getAttribute('data-date'));
+  } else {
+    if (selectedSeats.length >= 6) {
+      alert('Maximum 6 seats per booking.');
+      return;
+    }
+    lockSeat(el.getAttribute('data-bus'), seat, el.getAttribute('data-date'), el);
+  }
+}
+
+function lockSeat(busId, seat, date, el) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/lock_seat', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4 && xhr.status === 200) {
+      var res = JSON.parse(xhr.responseText);
+      if (res.ok) {
+        el.classList.remove('seat-available');
+        el.classList.add('seat-selected');
+        selectedSeats.push(seat);
+        updateSummary();
+      } else {
+        el.classList.remove('seat-available');
+        el.classList.add('seat-locked');
+        el.onclick = null;
+        alert('Seat ' + seat + ' is no longer available.');
+      }
+    }
+  };
+  xhr.send(JSON.stringify({bus_id: parseInt(busId), seat: seat, travel_date: date}));
+}
+
+function unlockSeat(busId, seat, date) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', '/unlock_seat', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onreadystatechange = function() {};
+  xhr.send(JSON.stringify({bus_id: parseInt(busId), seat: seat, travel_date: date}));
+  updateSummary();
+}
+
+function updateSummary() {
+  document.getElementById('sel-count').textContent = selectedSeats.length;
+  document.getElementById('sel-total').textContent = '₹' + (selectedSeats.length * price).toFixed(0);
+  document.getElementById('sel-seats-display').textContent = selectedSeats.length > 0 ? 'Seats: ' + selectedSeats.join(', ') : '';
+  document.getElementById('selected-seats-input').value = selectedSeats.join(',');
+  document.getElementById('proceed-btn').disabled = selectedSeats.length === 0;
+}
+</script>
+{% endblock %}

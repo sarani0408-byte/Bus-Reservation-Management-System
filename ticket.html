@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Ticket - {{ bk.booking_ref }}{% endblock %}
+{% block content %}
+<div class="ticket-page">
+  <div class="ticket" id="ticket-print">
+    <div class="ticket-header">
+      <div class="ticket-brand">🚌 BusBook TN</div>
+      <div class="ticket-status confirmed">✅ CONFIRMED</div>
+    </div>
+    <div class="ticket-ref">Booking Ref: <strong>{{ bk.booking_ref }}</strong></div>
+
+    <div class="ticket-body">
+      <div class="ticket-route">
+        <div class="ticket-city">
+          <div class="city-name">{{ bk.source }}</div>
+          <div class="city-time">{{ bk.departure_time }}</div>
+        </div>
+        <div class="ticket-arrow">
+          <div class="arrow-line">————————→</div>
+          <div class="duration-label">{{ bk.duration }}</div>
+        </div>
+        <div class="ticket-city">
+          <div class="city-name">{{ bk.destination }}</div>
+          <div class="city-time">{{ bk.arrival_time }}</div>
+        </div>
+      </div>
+
+      <div class="ticket-details">
+        <div class="td-block">
+          <label>Passenger</label>
+          <strong>{{ bk.passenger_name or bk.uname }}</strong>
+        </div>
+        <div class="td-block">
+          <label>Travel Date</label>
+          <strong>{{ bk.travel_date }}</strong>
+        </div>
+        <div class="td-block">
+          <label>Bus</label>
+          <strong>{{ bk.bus_name }}</strong>
+        </div>
+        <div class="td-block">
+          <label>Bus No.</label>
+          <strong>{{ bk.bus_number }}</strong>
+        </div>
+        <div class="td-block">
+          <label>Bus Type</label>
+          <strong>{{ bk.bus_type }}</strong>
+        </div>
+        <div class="td-block">
+          <label>Seats</label>
+          <strong>{{ bk.seats }}</strong>
+        </div>
+        <div class="td-block">
+          <label>Seat Count</label>
+          <strong>{{ bk.seat_count }}</strong>
+        </div>
+        <div class="td-block">
+          <label>Payment</label>
+          <strong>{{ bk.payment_method }}</strong>
+        </div>
+        <div class="td-block price-highlight">
+          <label>Total Paid</label>
+          <strong>₹{{ bk.total_price | int }}</strong>
+        </div>
+      </div>
+
+      <div class="ticket-qr">
+        <img src="data:image/png;base64,{{ qr_img }}" alt="QR Code" class="qr-img">
+        <p>Scan for verification</p>
+      </div>
+    </div>
+
+    <div class="ticket-footer">
+      <p>Booked on {{ bk.created_at[:16] }} &nbsp;|&nbsp; Phone: {{ bk.passenger_phone or bk.uphon }}</p>
+      <p>Please carry this ticket and a valid photo ID during travel.</p>
+    </div>
+  </div>
+
+  <div class="ticket-actions no-print">
+    <button onclick="window.print()" class="btn-primary">🖨 Print Ticket</button>
+    <a href="{{ url_for('my_bookings') }}" class="btn-secondary">View All Bookings</a>
+    <a href="{{ url_for('index') }}" class="btn-secondary">Book Another</a>
+  </div>
+</div>
+{% endblock %}
